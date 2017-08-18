@@ -22,24 +22,24 @@
 
 @interface APPEmailComposer ()
 
-// Reference is needed because of the async delegate
 @property (nonatomic, strong) CDVInvokedUrlCommand* command;
-// Implements the core functionality
+
+/**
+ * Implements the plugin functionality.
+ */
 @property (nonatomic, strong) APPEmailComposerImpl* impl;
 
 @end
 
 @implementation APPEmailComposer
 
-@synthesize command, impl;
+@synthesize command;
+@synthesize impl;
 
 #pragma mark -
 #pragma mark Lifecycle
 
-/**
- * Initialize the core impl object which does the main stuff.
- */
-- (void) pluginInitialize
+- (void)pluginInitialize
 {
     self.impl = [[APPEmailComposerImpl alloc] init];
 }
@@ -48,7 +48,10 @@
 #pragma mark Public
 
 /**
- * Check if the mail composer is able to send mails.
+ * Checks if the mail composer is able to send mails.
+ *
+ * @param callbackId
+ *      The ID of the JS function to be called with the result
  */
 - (void) isAvailable:(CDVInvokedUrlCommand*)cmd
 {
@@ -66,7 +69,10 @@
 }
 
 /**
- * Show the email composer view with pre-filled data.
+ * Shows the email composer view with pre-filled data.
+ *
+ * @param properties
+ *      The email properties like subject, body, attachments
  */
 - (void) open:(CDVInvokedUrlCommand*)cmd
 {
@@ -107,6 +113,9 @@
 
 /**
  * Displays the email draft.
+ *
+ * @param draft
+ *      The email composer view
  */
 - (void) presentMailComposerFromProperties:(NSDictionary*)props
 {
@@ -128,6 +137,9 @@
 
 /**
  * Instructs the application to open the specified URL.
+ *
+ * @param url
+ * A mailto: compatible URL.
  */
 - (void) openURLFromProperties:(NSDictionary*)props
 {
@@ -138,6 +150,11 @@
 
 /**
  * If the specified app if the buil-in iMail framework can be used.
+ *
+ * @param scheme
+ * An URL scheme.
+ * @return
+ * true if the scheme does refer to the email: scheme.
  */
 - (BOOL) canUseAppleMail:(NSString*) scheme
 {

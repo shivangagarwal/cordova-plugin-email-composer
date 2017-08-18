@@ -37,7 +37,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +46,9 @@ import java.util.regex.Pattern;
 
 import static de.appplant.cordova.emailcomposer.EmailComposer.LOG_TAG;
 
+/**
+ * Implements the interface methods of the plugin.
+ */
 class EmailComposerImpl {
 
     // The default mailto: scheme.
@@ -102,7 +104,7 @@ class EmailComposerImpl {
             throws JSONException {
 
         Intent mail = getEmailIntent();
-        String app  = params.optString("app", MAILTO_SCHEME);
+        String app  = params.optString("app", null);
 
         if (params.has("subject"))
             setSubject(params.getString("subject"), mail);
@@ -209,7 +211,7 @@ class EmailComposerImpl {
 
         for (int i = 0; i < attachments.length(); i++) {
             Uri uri = getUriForPath(attachments.getString(i), ctx);
-            if (uri != null) uris.add(uri);
+            uris.add(uri);
         }
 
         if (uris.isEmpty())
@@ -217,14 +219,7 @@ class EmailComposerImpl {
 
         draft.setAction(Intent.ACTION_SEND_MULTIPLE)
                 .setType("message/rfc822")
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                .putExtra(Intent.EXTRA_STREAM, uris);
-
-        if (uris.size() > 1)
-            return;
-
-        draft.setAction(Intent.ACTION_SEND)
-                .putExtra(Intent.EXTRA_STREAM, uris.get(0));
+                .putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
     }
 
     /**
@@ -237,8 +232,6 @@ class EmailComposerImpl {
     private Uri getUriForPath (String path, Context ctx) {
         if (path.startsWith("res:")) {
             return getUriForResourcePath(path, ctx);
-        } else if (path.startsWith("app://")) {
-            return getUriForAppInternalPath(path, ctx);
         } else if (path.startsWith("file:///")) {
             return getUriForAbsolutePath(path);
         } else if (path.startsWith("file://")) {
@@ -308,46 +301,6 @@ class EmailComposerImpl {
             if (outStream != null) {
                 safeClose(outStream);
             }
-        }
-
-        return Uri.fromFile(file);
-    }
-
-    /**
-     * The URI for an internal file.
-     *
-     * @param path The given asset path.
-     * @param ctx  The application context.
-     * @return     The URI pointing to the given path.
-     */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private Uri getUriForAppInternalPath (String path, Context ctx) {
-        String resPath  = path.replaceFirst("app:/", "");
-        String fileName = resPath.substring(resPath.lastIndexOf('/') + 1);
-        File dir        = ctx.getExternalCacheDir();
-
-        if (dir == null) {
-            Log.e("EmailComposer", "Missing external cache dir");
-            return Uri.EMPTY;
-        }
-
-        String storage  = dir.toString() + ATTACHMENT_FOLDER;
-        File file       = new File(storage, fileName);
-
-        new File(storage).mkdir();
-        File privateDir    = ctx.getFilesDir();
-        String privatePath = privateDir.getAbsolutePath()+"/.."+resPath;
-
-        try {
-            FileOutputStream outStream = new FileOutputStream(file);
-            InputStream inputStream    = new FileInputStream(privatePath);
-
-            copyFile(inputStream, outStream);
-            outStream.flush();
-            outStream.close();
-        } catch (Exception e) {
-            Log.e("EmailComposer", "File not found: " + privatePath);
-            e.printStackTrace();
         }
 
         return Uri.fromFile(file);

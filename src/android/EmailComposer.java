@@ -36,6 +36,7 @@ import java.util.List;
 
 import static android.Manifest.permission.GET_ACCOUNTS;
 
+
 @SuppressWarnings("Convert2Diamond")
 public class EmailComposer extends CordovaPlugin {
 

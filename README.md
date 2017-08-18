@@ -1,71 +1,139 @@
 
-<p align="left"><b><a href="https://github.com/katzer/cordova-plugin-email-composer/tree/example">SAMPLE APP</a> :point_right:</b></p>
+[![npm version](https://badge.fury.io/js/cordova-plugin-email-composer.svg)](http://badge.fury.io/js/cordova-plugin-email-composer)
+[![Code Climate](https://codeclimate.com/github/katzer/cordova-plugin-email-composer/badges/gpa.svg)](https://codeclimate.com/github/katzer/cordova-plugin-email-composer)
+[![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=L3HKQCD9UA35A "Donate once-off to this project using Paypal")
 
-# Cordova Email Plugin <br> [![npm version](https://badge.fury.io/js/cordova-plugin-email-composer.svg)](http://badge.fury.io/js/cordova-plugin-email-composer) [![Code Climate](https://codeclimate.com/github/katzer/cordova-plugin-email-composer/badges/gpa.svg)](https://codeclimate.com/github/katzer/cordova-plugin-email-composer) [![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=L3HKQCD9UA35A "Donate once-off to this project using Paypal")
+<p align="right">
+    <a href="https://github.com/katzer/cordova-plugin-email-composer/tree/example">EXAMPLE :point_right:</a>
+</p>
 
-<img width="260px" align="right" hspace="10" vspace="5" src="https://github.com/katzer/cordova-plugin-email-composer/blob/example/images/ios_iphone5s_spacegrey_portrait.png">
+Cordova Email Plugin
+====================
+
+<img width="260px" align="right" hspace="10" vspace="5" src="http://flashsimulations.com/wp-content/uploads/2011/12/air-ios-in-app-mail-app.png">
 
 The plugin provides access to the standard interface that manages the editing and sending an email message. You can use this view controller to display a standard email view inside your application and populate the fields of that view with initial values, such as the subject, email recipients, body text, and attachments. The user can edit the initial contents you specify and choose to send the email or cancel the operation.
 
 Using this interface does not guarantee immediate delivery of the corresponding email message. The user may cancel the creation of the message, and if the user does choose to send the message, the message is only queued in the Mail application outbox. This allows you to generate emails even in situations where the user does not have network access, such as in airplane mode. This interface does not provide a way for you to verify whether emails were actually sent.<br><br>
 
 
-## Supported Platforms
+## Overview
+1. [Supported Platforms](#supported-platforms)
+2. [Installation](#installation)
+3. [ChangeLog](#changelog)
+4. [Using the plugin](#using-the-plugin)
+5. [Examples](#examples)
+6. [Quirks](#quirks)
 
-- __Android / Amazon FireOS__
-- __Browser__
+
+## Supported Platforms
 - __iOS__
-- __OSX__
+- __Android__
+- __Amazon FireOS__
 - __Windows__
 
 
 ## Installation
+The plugin can either be installed from git repository, from local file system through the [Command-line Interface][CLI] for debugging. It's available as an [npm package][npm] for [PhoneGap Build][PGB] as well.
 
-The plugin can be installed via [Cordova-CLI][CLI] and is publicly available on [NPM][npm].
+### Local development environment
+From master:
+```bash
+# ~~ from master branch ~~
+cordova plugin add https://github.com/katzer/cordova-plugin-email-composer.git
+```
+from a local folder:
+```bash
+# ~~ local folder ~~
+cordova plugin add cordova-plugin-email-composer --searchpath path/to/plugin --link
+```
+or to use the last stable version:
+```bash
+# ~~ stable version ~~
+cordova plugin add cordova-plugin-email-composer@0.8.3
+```
 
-Execute from the projects root folder:
-
-    $ cordova plugin add cordova-plugin-email-composer
-
-Or install a specific version:
-
-    $ cordova plugin add cordova-plugin-email-composer@VERSION
-
-Or install the latest head version:
-
-    $ cordova plugin add https://github.com/katzer/cordova-plugin-email-composer.git
-
-Or install from local source:
-
-    $ cordova plugin add cordova-plugin-email-composer --searchpath <path>
+### PhoneGap Build
+Add the following xml to your config.xml to always use the latest version of this plugin:
+```xml
+<gap:plugin name="cordova-plugin-email-composer" version="0.8.3" source="npm" />
+```
 
 
-## Usage
+## ChangeLog
+#### Version 0.8.3 (01.03.2016)
+63 commits including bug fixes and enhancements:
+- [___change:___] New plugin ID: _cordova-plugin-email-composer_
+- [enhancement:] Published on npm
+- [enhancement:] Allowed the chooser header text to be configured (#113)
+- [enhancement:] Plain mailto: support
+- [enhancement:] Specify email client using `app:` flag
+- [enhancement:] More samples in Sample-App
+- [bugfix:] Build issues with iOS and Android
+- [bugfix:] Compatibility with newest OS and cordova platform versions
+- [bugfix:] Crash on iOS when presenting view controller from background (#169)
+- [bugfix:] Crash on iOS when no email account is setup
+- [bugfix:] Resolved issues with attachments on all platforms
+- ...
 
-The plugin creates the object `cordova.plugins.email` and is accessible after the *deviceready* event has been fired.
+#### Known issues
+- _\<img\>_ tags do not work on Android.
+- Callbacks for windows platform are called immediately.
+- _isAvailable_ does always return _true_ for windows platform.
 
-```js
+#### Further informations
+- See [CHANGELOG.md][changelog] to get the full changelog for the plugin.
+
+
+## Using the plugin
+The plugin creates the object ```cordova.plugins.email``` with following methods:
+
+1. [email.isAvailable][available]
+2. [email.open][open]
+
+### Plugin initialization
+The plugin and its methods are not available before the *deviceready* event has been fired.
+
+```javascript
 document.addEventListener('deviceready', function () {
     // cordova.plugins.email is now available
 }, false);
 ```
 
-### Determine email capability
+### Determine if the device is capable to send emails
+The ability to send emails can be revised through the `email.isAvailable` interface. The method takes a callback function, passed to which is a boolean property. Optionally the callback scope can be assigned as a second parameter.
 
-The Email service is only available on devices which have configured an email account:
-
-```javascript
-cordova.plugins.email.isAvailable(function (hasAccount) {});
-```
-
-To check for a specific mail client, just pass its uri scheme on iOS, or its name on Android as first parameter:
+The Email service is only available on devices capable which are able to send emails. E.g. which have configured an email account and have installed an email app. You can use this function to hide email functionality from users who will be unable to use it.
 
 ```javascript
-cordova.plugins.email.isAvailable('gmail', function (hasAccount, hasGmail) {});
+cordova.plugins.email.isAvailable(
+    function (isAvailable) {
+        // alert('Service is not available') unless isAvailable;
+    }
+);
 ```
 
-### Open an email draft
-All properties are optional. After opening the draft the user may have the possibilities to edit the draft.
+If you want to open a draft in a specific application, just pass its uri scheme on iOS, or its name on Android as first parameter, to check whether the application is installed or not. The callback function will return a second parameter of type boolean then.
+
+```javascript
+cordova.plugins.email.isAvailable(
+    urischeme, function (isAvailable, withScheme) {
+        // alert('Service is not available') unless isAvailable;
+    }
+);
+```
+
+### Open a pre-filled email draft
+A pre-filled email draft can be opened through the `email.open` or `email.openDraft` interface. The method takes a hash as an argument to specify the email's properties. All properties are optional. Further more it accepts an callback function to be called after the email view has been dismissed.
+
+After opening the draft the user may have the possibilities to edit, delete or send the email.
+
+#### Further informations
+- An [configured email account][available] is required to send emails.
+- Attachments can be either base64 encoded datas, files from the the device storage or assets from within the *www* folder.
+- The default value for *isHTML* is *true*.
+- Its possible to [specify][email_app] the email app on Android and iOS.
+- See the [examples][examples] for how to create and show an email draft.
 
 ```javascript
 cordova.plugins.email.open({
@@ -79,7 +147,11 @@ cordova.plugins.email.open({
 }, callback, scope);
 ```
 
-The following example shows how to create and show an email draft pre-filled with different kind of properties:
+
+## Examples
+
+### Open an email draft
+The following example shows how to create and show an email draft pre-filled with different kind of properties.
 
 ```javascript
 cordova.plugins.email.open({
@@ -91,30 +163,33 @@ cordova.plugins.email.open({
 });
 ```
 
-Of course its also possible to open a blank draft:
-
+Of course its also possible to open a blank draft.
 ```javascript
 cordova.plugins.email.open();
 ```
 
-Its possible to specify the email client. If the phone isn´t able to handle the specified scheme it will fallback to the system default:
+### Send HTML encoded body
+Its possible to send the email body either as text or HTML. In the case of HTML the `isHTML` properties needs to be set.
 
 ```javascript
-cordova.plugins.email.open({ app: 'mailto', subject: 'Sent with mailto' });
+cordova.plugins.email.open({
+    to:      'max@mustermann.de',
+    subject: 'Greetings',
+    body:    '<h1>Nice greetings from Leipzig</h1>',
+    isHtml:  true
+});
 ```
 
-On _Android_ the app can be specified by either an alias or its package name. The alias _gmail_ is available by default.
+### Get informed when the view has been dismissed
+The `open` method supports additional callback to get informed when the view has been dismissed.
 
 ```javascript
-// Add app alias
-cordova.plugins.email.addAlias('gmail', 'com.google.android.gm');
-
-// Specify app by name or alias
-cordova.plugins.email.open({ app: 'gmail', subject: 'Sent from Gmail' });
+cordova.plugins.email.open(properties, function () {
+    console.log('email view dismissed');
+}, this);
 ```
 
-### Attachments
-
+### Adding attachments
 Attachments can be either base64 encoded datas, files from the the device storage or assets from within the *www* folder.
 
 #### Attach Base64 encoded content
@@ -132,7 +207,7 @@ The path to the files must be defined absolute from the root of the file system.
 
 ```javascript
 cordova.plugins.email.open({
-    attachments: 'file:///storage/sdcard/icon.png', //=> storage/sdcard/icon.png (Android)
+    attachments: 'file:///storage/sdcard/icon.png', //=> Android
 });
 ```
 
@@ -141,7 +216,7 @@ Each app has a resource folder, e.g. the _res_ folder for Android apps or the _R
 
 ```javascript
 cordova.plugins.email.open({
-    attachments: 'res://icon.png' //=> res/mipmap/icon (Android)
+    attachments: 'res://icon.png' //=> res/drawable/icon (Android)
 });
 ```
 
@@ -157,45 +232,35 @@ cordova.plugins.email.open({
 });
 ```
 
-#### Attach files from the internal app file system
-The path must be defined relative from the directory holding application files.
+### Specify email app
+Its possible to specify the email app which shall open the draft for further editing. Just pass its scheme name through the drafts app-attribute. If the phone isn´t able to handle the specified scheme it will fallback to standard.
 
 ```javascript
+// Specify app by scheme name
 cordova.plugins.email.open({
-    attachments: [
-        'app://databases/db.db3', //=> /data/data/<app.package>/databases/db.db3 (Android)
-        'app://databases/db.db3', //=> /Applications/<AppName.app>/databases/db.db3 (iOS, OSX)
-        'app://databases/db.db3', //=> ms-appdata:///databases/db.db3 (Windows)
-    ]
-});
+    app: 'mailto',
+    subject: 'Sent with mailto'
+})
 ```
 
-
-## Permissions
-
-The plugin might ask for granting permissions like reading email account informations. That's done automatically.
-
-Its possible to request them manually:
+On _Android_ the app can be specified by either an alias or its package name. The alias _gmail_ is available by default.
 
 ```javascript
-cordova.plugins.email.requestPermission(function (granted) {...});
+// Add app alias
+cordova.plugins.email.addAlias('gmail', 'com.google.android.gm');
+
+// Specify app by name or alias
+cordova.plugins.email.open({
+    app: 'gmail',
+    subject: 'Sent from Gmail'
+})
 ```
-
-Or check if they have been granted already:
-
-```javascript
-cordova.plugins.email.hasPermission(function (granted) {...});
-```
-
-In case of missing permissions the result of `isAvailable` might be wrong.
 
 
 ## Quirks
 
 ### HTML and CSS on Android
 Even Android is capable to render HTML formatted mails, most native Mail clients like the standard app or Gmail only support rich formatted text while writing mails. That means that __CSS cannot be used__ (no _class_ and _style_ support).
-
-__Update:__ Seems it stopped working with gmail at version 6.x and Android Mail, see [#264](https://github.com/katzer/cordova-plugin-email-composer/issues/264).
 
 The following table gives an overview which tags and attributes can be used:
 
@@ -237,14 +302,7 @@ The following table gives an overview which tags and attributes can be used:
 </table>
 
 ### HTML and CSS on Windows
-
 HTML+CSS formatted body are not supported through the native API for Windows.
-
-### Other limitations
-
-- _\<img\>_ tags do not work properly on Android.
-- Callbacks for windows and osx platform are called immediately.
-- _isAvailable_ does always return _true_ for windows platform.
 
 
 ## Contributing
@@ -260,14 +318,19 @@ HTML+CSS formatted body are not supported through the native API for Windows.
 
 This software is released under the [Apache 2.0 License][apache2_license].
 
-Made with :yum: from Leipzig
-
-© 2013 [appPlant GmbH][appplant]
+© 2013-2016 appPlant UG, Inc. All rights reserved
 
 
 [cordova]: https://cordova.apache.org
+[ios_guide]: http://developer.apple.com/library/ios/documentation/MessageUI/Reference/MFMailComposeViewController_class/Reference/Reference.html
+[wp8_guide]: http://msdn.microsoft.com/en-us/library/windowsphone/develop/hh394003.aspx
 [CLI]: http://cordova.apache.org/docs/en/edge/guide_cli_index.md.html#The%20Command-line%20Interface
+[PGB]: http://docs.build.phonegap.com/en_US/index.html
 [npm]: https://www.npmjs.com/package/cordova-plugin-email-composer
+[messageui_framework]: #compile-error-on-ios
+[changelog]: https://github.com/katzer/cordova-plugin-email-composer/blob/master/CHANGELOG.md
+[available]: #determine-if-the-device-is-capable-to-send-emails
+[open]: #open-a-pre-filled-email-draft
 [email_app]: #specify-email-app
+[examples]: #examples
 [apache2_license]: http://opensource.org/licenses/Apache-2.0
-[appplant]: http://appplant.de
